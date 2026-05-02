@@ -2,7 +2,7 @@
 
 A browser-based idle clicker game where you build a space colony, reach orbit, launch a deep space program, and ultimately send a Colony Ship to a new planet — then do it all again, faster.
 
-**Play it on itch.io:** *(link coming soon)*
+**Play it on itch.io:** https://spacebaseracedev.itch.io/space-base-race
 
 ---
 
