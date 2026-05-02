@@ -962,6 +962,31 @@ function App() {
         {tab==="support" && <SupportTab/>}
       </div>
 
+      {logModal && (
+        <div style={{position:"fixed",inset:0,background:"#000000cc",display:"flex",alignItems:"flex-start",justifyContent:"center",zIndex:1000,paddingTop:40,overflowY:"auto"}} onClick={()=>setLogModal(false)}>
+          <div style={{background:"#0a1525",border:"1px solid #1e3a5f",borderRadius:12,padding:"16px",maxWidth:500,width:"90%",maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <span style={{fontSize:14,fontWeight:700,color:"#a0c4ff"}}>Colony Transmission Log</span>
+              <button onClick={()=>setLogModal(false)} style={{background:"none",border:"none",color:"#5a7a9a",cursor:"pointer",fontSize:16}}>✕</button>
+            </div>
+            {commsLog.length===0 && <div style={{textAlign:"center",color:"#3a5a7a",fontSize:12,padding:"20px 0"}}>No transmissions yet. Keep building.</div>}
+            {commsLog.map((ev,i) => {
+              const isStory = ev.kind==="story";
+              return (
+                <div key={i} style={{background:"#080d1a",border:"1px solid "+(i===0?isStory?"#2a4a6a":"#1a2a3a":"#101820"),borderRadius:8,padding:"8px 10px",marginBottom:6,opacity:i===0?1:isStory?0.9:0.65}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:isStory?3:1}}>
+                    <span style={{fontSize:isStory?15:12,flexShrink:0}}>{ev.icon}</span>
+                    {isStory ? <span style={{fontSize:12,fontWeight:700,color:"#a0c4ff"}}>{ev.title}</span> : <span style={{fontSize:10,fontWeight:600,color:"#4a6a8a"}}>Comms</span>}
+                    <span style={{fontSize:9,color:"#2a4a6a",marginLeft:"auto"}}>{"T+"+fmtTime(ev.time||0)}</span>
+                  </div>
+                  <div style={{fontSize:isStory?10:9,color:isStory?"#8a9aaa":"#4a6a7a",lineHeight:1.5,fontStyle:isStory?"normal":"italic"}}>{ev.text}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {newAch && (
         <div style={{position:"fixed",bottom:20,left:"50%",transform:"translateX(-50%)",background:"#1a3a5a",border:"1px solid #4a9eff",color:"#a0c4ff",padding:"6px 16px",borderRadius:20,fontSize:12,fontWeight:700,zIndex:999,pointerEvents:"none",boxShadow:"0 4px 20px #000"}}>
           {"Achievement: "+newAch}
