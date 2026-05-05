@@ -479,6 +479,13 @@ const UPGRADES = [
   {id:"u13",layer:3,name:"Warp Field Theory",  req:{research:800,fuel:500},                 cost:{research:800,fuel:500},                effect:"3x warp lab output",            tier:1},
   {id:"u14",layer:3,name:"Autonomous Probes",  req:{research:1000},                         cost:{research:1000,fuel:400},               effect:"3x probe factory output",       tier:1},
   {id:"u15",layer:3,name:"Starcore Drive",      req:{fuel:2000,energy:1000},                 cost:{fuel:2000,energy:1000,minerals:1000},  effect:"All fuel x2, colony ship -30%", tier:2},
+  // Branching upgrades — pick one per pair, the other is locked forever
+  {id:"ub1a",layer:1,name:"Overclock Protocol", req:{energy:2000,minerals:2000,research:1000}, cost:{energy:2000,minerals:2000,research:1000}, effect:"Passive prod ×2 — click power ×0.5",               tier:2, exclusive:["ub1b"], branchGroup:"g1"},
+  {id:"ub1b",layer:1,name:"Field Operator",     req:{energy:2000,minerals:2000,research:1000}, cost:{energy:2000,minerals:2000,research:1000}, effect:"Click power ×4 — passive prod ×0.7",               tier:2, exclusive:["ub1a"], branchGroup:"g1"},
+  {id:"ub2a",layer:2,name:"Fuel First",         req:{fuel:800,research:500,energy:500},        cost:{fuel:800,research:500,energy:500},         effect:"Fuel prod ×4 — other orbital ×0.6",               tier:2, exclusive:["ub2b"], branchGroup:"g2"},
+  {id:"ub2b",layer:2,name:"Steady Ascent",      req:{fuel:800,research:500,energy:500},        cost:{fuel:800,research:500,energy:500},         effect:"All orbital production ×2.5",                     tier:2, exclusive:["ub2a"], branchGroup:"g2"},
+  {id:"ub3a",layer:3,name:"Fast Launch",        req:{research:3000,fuel:2000,energy:1000},     cost:{research:3000,fuel:2000,energy:1000},      effect:"Ship phase costs −40% — legacy points ×0.5",     tier:2, exclusive:["ub3b"], branchGroup:"g3"},
+  {id:"ub3b",layer:3,name:"Grand Expedition",   req:{research:3000,fuel:2000,energy:1000},     cost:{research:3000,fuel:2000,energy:1000},      effect:"Ship phase costs +40% — legacy points ×3, prestige ×2", tier:2, exclusive:["ub3a"], branchGroup:"g3"},
   // Click Mastery upgrades — require any tier-3 knowledge node
   {id:"uc1",layer:3,name:"Click Mastery I",   req:{energy:5000,minerals:5000,research:5000,population:5000,fuel:5000},          cost:{energy:5000,minerals:5000,research:5000,population:5000,fuel:5000},          effect:"2x click power", tier:3, knowReq:"tier3"},
   {id:"uc2",layer:3,name:"Click Mastery II",  req:{energy:50000,minerals:50000,research:50000,population:50000,fuel:50000},     cost:{energy:50000,minerals:50000,research:50000,population:50000,fuel:50000},     effect:"5x click power (10x stacked)", tier:3, knowReq:"tier3"},
@@ -1243,6 +1250,7 @@ function App() {
     if(knowledge.includes("cx_em")&&(type==="energy"||type==="minerals"))b*=2;
     if(knowledge.includes("cx_rp")&&(type==="research"||type==="population"))b*=2;
     if(knowledge.includes("cx_pf2"))b*=4;
+    if(upgrades.includes("ub1a"))b*=0.5; if(upgrades.includes("ub1b"))b*=4;
     // Click Mastery upgrades
     if(upgrades.includes("uc1"))b*=2;
     if(upgrades.includes("uc2"))b*=5;
@@ -1271,6 +1279,10 @@ function App() {
       if(upgrades.includes("u6")&&["lab","habitat","medbay"].includes(bld.id))m*=1.5;
       if(upgrades.includes("u7"))m*=2;
       if(upgrades.includes("u8")&&bld.prod.fuel)m*=2; if(upgrades.includes("u9")&&bld.id==="orbitallab")m*=2;
+      if(upgrades.includes("ub1a"))m*=2; if(upgrades.includes("ub1b"))m*=0.7;
+      if(upgrades.includes("ub2a")&&bld.prod.fuel)m*=4;
+      if(upgrades.includes("ub2a")&&bld.layer===2&&!bld.prod.fuel)m*=0.6;
+      if(upgrades.includes("ub2b")&&bld.layer===2)m*=2.5;
       if(upgrades.includes("u10")&&bld.layer===2)m*=1.5; if(upgrades.includes("u11")&&bld.id==="oreprocessor")m*=3;
       if(upgrades.includes("u12")&&bld.id==="cryobay")m*=2; if(upgrades.includes("u13")&&bld.id==="warplab")m*=3;
       if(upgrades.includes("u14")&&bld.id==="probefactory")m*=3; if(upgrades.includes("u15")&&bld.prod.fuel)m*=2;
@@ -1499,9 +1511,10 @@ function App() {
     const m=Math.pow(scaleBase, cnt);
     const disc=upgrades.includes("u15")&&b.id==="colonyship"?0.7:1;
     const layerSkipDisc = (rankEffect.special === "layer_skip" && (b.id==="terraformer"||b.id==="stationdock"||(b.phase===true))) ? 0.5 : 1;
+    const phaseMult = b.phase ? (upgrades.includes("ub3a") ? 0.6 : upgrades.includes("ub3b") ? 1.4 : 1) : 1;
     const rankMult = (rankEffect.buildingCostMult || 1) * layerSkipDisc;
-    if(b.cost){const c={};Object.entries(b.cost).forEach(([k,v])=>{c[k]=Math.floor(v*m*disc*rankMult);});return c;}
-    return{[b.res]:Math.floor(b.base*m*rankMult)};
+    if(b.cost){const c={};Object.entries(b.cost).forEach(([k,v])=>{c[k]=Math.floor(v*m*disc*phaseMult*rankMult);});return c;}
+    return{[b.res]:Math.floor(b.base*m*phaseMult*rankMult)};
   };
   const L3_UPGRADES = ["u13","u14","u15"]; // 3 main Layer-3 upgrades; phase 1 requires 2 of these
   const reqsMet = b => {
@@ -1530,10 +1543,11 @@ function App() {
     const m = Math.pow(scaleBase, cnt);
     const disc = upgrades.includes("u15") && b.id === "colonyship" ? 0.7 : 1;
     const layerSkipDisc = (rankEffect.special === "layer_skip" && (b.id === "terraformer" || b.id === "stationdock" || b.phase===true)) ? 0.5 : 1;
+    const phaseMult = b.phase ? (upgrades.includes("ub3a") ? 0.6 : upgrades.includes("ub3b") ? 1.4 : 1) : 1;
     const rankMult = (rankEffect.buildingCostMult || 1) * layerSkipDisc;
     const freshCost = b.cost
-      ? Object.fromEntries(Object.entries(b.cost).map(([k,v]) => [k, Math.floor(v*m*disc*rankMult)]))
-      : { [b.res]: Math.floor(b.base * m * rankMult) };
+      ? Object.fromEntries(Object.entries(b.cost).map(([k,v]) => [k, Math.floor(v*m*disc*phaseMult*rankMult)]))
+      : { [b.res]: Math.floor(b.base * m * phaseMult * rankMult) };
     const affordable = Object.entries(freshCost).every(([k,v]) => (resRef.current[k]||0) >= v);
     if (!affordable) return;
     // Deduct resources and update the mirror so the next hold tick sees fresh values
@@ -1589,6 +1603,7 @@ function App() {
     if(upgrades.includes(u.id)||!canAfford(u.cost)) return;
     if(!Object.entries(u.req).every(([k,v])=>(totalRes[k]||0)>=v)) return;
     if(u.knowReq==="tier3" && !TIER3_KNOW.some(id=>knowledge.includes(id))) return;
+    if(u.exclusive && u.exclusive.some(ex=>upgrades.includes(ex))) return;
     setRes(r=>{const n={...r};Object.entries(u.cost).forEach(([k,v])=>{n[k]-=v;});return n;});
     setUpgrades(p=>[...p,u.id]);
     AudioEngine.play('achieve'); // upgrade chime reuses achieve tone
@@ -1626,7 +1641,9 @@ function App() {
   },[]);
 
   const doPrestige = () => {
-    const lp=Math.floor(elapsed/60)+knowledge.length*2+layer*10;
+    const lpMult = upgrades.includes("ub3a") ? 0.5 : upgrades.includes("ub3b") ? 3 : 1;
+    const prestigeMult = upgrades.includes("ub3b") ? 2 : 1.5;
+    const lp=Math.floor((Math.floor(elapsed/60)+knowledge.length*2+layer*10)*lpMult);
     // XP: 500 base, +100 if faster than personal best, mark planet visited
     awardXP(500, "Colony Ship launched!");
     const wasFaster = XPStore.setBest(elapsed);
@@ -1646,7 +1663,7 @@ function App() {
       }
     }
     setXpData(XPStore.get());
-    setPrestige(p=>p+1); setPrestigeBonus(b=>b*1.5); setLegacyPoints(prev=>prev+lp);
+    setPrestige(p=>p+1); setPrestigeBonus(b=>b*prestigeMult); setLegacyPoints(prev=>prev+lp);
     setCurrentPlanet(PLANETS[prestige%PLANETS.length]);
     // Apply rank starting resources, if any
     const startRes = rankEffect.startResources ? {...initRes(), ...rankEffect.startResources} : initRes();
@@ -2208,39 +2225,61 @@ function App() {
         )}
 
         {tab==="upgrade"&&(()=>{
-          // Sort: affordable+req met → req met but unaffordable → req unmet → owned (last)
           const sorted = [...visUpgrades].sort((a,b)=>{
             const ao=upgrades.includes(a.id), bo=upgrades.includes(b.id);
-            if (ao!==bo) return ao?1:-1; // owned to bottom
+            if (ao!==bo) return ao?1:-1;
             const ar=Object.entries(a.req).every(([k,v])=>(totalRes[k]||0)>=v);
             const br=Object.entries(b.req).every(([k,v])=>(totalRes[k]||0)>=v);
-            if (ar!==br) return ar?-1:1; // unmet req to bottom
+            if (ar!==br) return ar?-1:1;
             const aa=canAfford(a.cost), ba=canAfford(b.cost);
-            if (aa!==ba) return aa?-1:1; // affordable first
+            if (aa!==ba) return aa?-1:1;
             return (a.layer||1)-(b.layer||1);
           });
+          // Render branching pairs as a unified choice card; track rendered groups
+          const renderedGroups = new Set();
+          const renderUpgrade = u => {
+            const owned=upgrades.includes(u.id),afford=canAfford(u.cost);
+            const req=Object.entries(u.req).every(([k,v])=>(totalRes[k]||0)>=v);
+            const blocked=u.exclusive&&u.exclusive.some(ex=>upgrades.includes(ex));
+            const wait=(!owned&&!blocked&&req&&!afford)?timeToAfford(res,prod,u.cost):null;
+            const primaryRes=Object.keys(u.cost)[0]||Object.keys(u.req)[0]||"energy";
+            const accent=RES[primaryRes].color;
+            const clickable=!owned&&!blocked&&req;
+            return(
+              <div key={u.id} onClick={()=>clickable&&buyUpgrade(u)} style={{background:owned?"#0a1a0a":blocked?"#0d0d0d":"#080d1a",border:"1px solid "+(owned?"#2a5a2a":blocked?"#1a1a1a":afford&&req?accent+"99":req?"#1e3a5f":"#0d1a2e"),borderRadius:6,padding:"7px 8px",opacity:owned?0.75:blocked?0.3:req?1:0.45,cursor:clickable?"pointer":"default",display:"flex",flexDirection:"column",gap:3,borderLeft:"3px solid "+(owned?"#2a5a2a":blocked?"#333":accent)}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:4}}>
+                  <span style={{fontSize:11,fontWeight:700,color:owned?"#6fcf97":blocked?"#555":"#c8d8f0",flex:1,lineHeight:1.25}}>{u.knowReq==="tier3"?"👆 ":u.layer===3?"🌌 ":u.layer===2?"🛸 ":""}{u.name}</span>
+                  {owned&&<span style={{color:"#6fcf97",fontSize:12,flexShrink:0}}>✓</span>}
+                  {blocked&&<span style={{color:"#555",fontSize:12,flexShrink:0}}>✗</span>}
+                </div>
+                <div style={{fontSize:9,color:blocked?"#444":"#4a7a9a",lineHeight:1.35}}>{u.effect}</div>
+                {!req&&!owned&&!blocked&&<div style={{fontSize:9,color:"#3a5a7a"}}>{"Need: "+Object.entries(u.req).map(([k,v])=>FMT(v)+RES[k].icon).join(" + ")}</div>}
+                {req&&!owned&&!blocked&&<div style={{display:"flex",flexWrap:"wrap",gap:2}}>{Object.entries(u.cost).map(([k,v])=><Chip key={k} ok={(res[k]||0)>=v} text={RES[k].icon+FMT(v)}/>)}</div>}
+                {wait!==null&&isFinite(wait)&&<div style={{fontSize:8,color:"#8a6a2a"}}>{"~"+FMTT(wait)}</div>}
+              </div>
+            );
+          };
           return(
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:6}}>
-              {sorted.map(u=>{
-                const owned=upgrades.includes(u.id),afford=canAfford(u.cost);
-                const req=Object.entries(u.req).every(([k,v])=>(totalRes[k]||0)>=v);
-                const wait=(!owned&&req&&!afford)?timeToAfford(res,prod,u.cost):null;
-                // primary resource = first cost key, used for accent color
-                const primaryRes = Object.keys(u.cost)[0] || Object.keys(u.req)[0] || "energy";
-                const accent = RES[primaryRes].color;
-                return(
-                  <div key={u.id} onClick={()=>buyUpgrade(u)} style={{background:owned?"#0a1a0a":"#080d1a",border:"1px solid "+(owned?"#2a5a2a":afford&&req?accent+"99":req?"#1e3a5f":"#0d1a2e"),borderRadius:6,padding:"7px 8px",opacity:owned?0.75:req?1:0.45,cursor:!owned&&req?"pointer":"default",display:"flex",flexDirection:"column",gap:3,borderLeft:"3px solid "+(owned?"#2a5a2a":accent)}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:4}}>
-                      <span style={{fontSize:11,fontWeight:700,color:owned?"#6fcf97":"#c8d8f0",flex:1,lineHeight:1.25}}>{u.knowReq==="tier3"?"👆 ":u.layer===3?"🌌 ":u.layer===2?"🛸 ":""}{u.name}</span>
-                      {owned&&<span style={{color:"#6fcf97",fontSize:12,flexShrink:0}}>✓</span>}
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {sorted.reduce((acc,u)=>{
+                if(u.branchGroup){
+                  if(renderedGroups.has(u.branchGroup)) return acc;
+                  renderedGroups.add(u.branchGroup);
+                  const pair=sorted.filter(x=>x.branchGroup===u.branchGroup);
+                  const anyOwned=pair.some(x=>upgrades.includes(x.id));
+                  acc.push(
+                    <div key={"bg_"+u.branchGroup} style={{border:"1px solid #2a3a5a",borderRadius:8,padding:"6px 8px",background:"#060c18"}}>
+                      {!anyOwned&&<div style={{fontSize:9,fontWeight:700,color:"#e6a817",marginBottom:5,letterSpacing:1}}>⚡ CHOOSE ONE</div>}
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                        {pair.map(pu=>renderUpgrade(pu))}
+                      </div>
                     </div>
-                    <div style={{fontSize:9,color:"#4a7a9a",lineHeight:1.35}}>{u.effect}</div>
-                    {!req&&!owned&&<div style={{fontSize:9,color:"#3a5a7a"}}>{"Need: "+Object.entries(u.req).map(([k,v])=>FMT(v)+RES[k].icon).join(" + ")}</div>}
-                    {req&&!owned&&<div style={{display:"flex",flexWrap:"wrap",gap:2}}>{Object.entries(u.cost).map(([k,v])=><Chip key={k} ok={(res[k]||0)>=v} text={RES[k].icon+FMT(v)}/>)}</div>}
-                    {wait!==null&&isFinite(wait)&&<div style={{fontSize:8,color:"#8a6a2a"}}>{"~"+FMTT(wait)}</div>}
-                  </div>
-                );
-              })}
+                  );
+                } else {
+                  acc.push(<div key={u.id} style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:6}}>{renderUpgrade(u)}</div>);
+                }
+                return acc;
+              },[])}
             </div>
           );
         })()}
