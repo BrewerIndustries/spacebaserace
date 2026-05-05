@@ -97,6 +97,19 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 }
 .layer-stars{position:absolute;inset:0;background:radial-gradient(2px 2px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 70% 60%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 80%,#fff,transparent),radial-gradient(1px 1px at 85% 25%,#fff,transparent),radial-gradient(2px 2px at 15% 65%,#fff,transparent),radial-gradient(1px 1px at 55% 15%,#fff,transparent),radial-gradient(1.5px 1.5px at 90% 90%,#fff,transparent);opacity:0.6;}
 
+/* High Contrast Mode — .hc on body; !important overrides React inline styles */
+body.hc{background:#000!important;color:#fff!important;}
+body.hc div,body.hc section{background:#0a0a0a!important;border-color:#fff!important;box-shadow:none!important;}
+body.hc span,body.hc p,body.hc h1,body.hc h2,body.hc h3,body.hc label{color:#fff!important;text-shadow:none!important;}
+body.hc button{background:#111!important;color:#fff!important;border:1px solid #fff!important;box-shadow:none!important;}
+body.hc button:disabled,body.hc button[disabled]{opacity:0.35!important;border-color:#888!important;color:#888!important;}
+body.hc input[type="range"]{accent-color:#fff!important;}
+body.hc input,body.hc textarea{background:#111!important;color:#fff!important;border-color:#fff!important;}
+body.hc .xp-popup{background:#000!important;border:1px solid #fff!important;border-left:3px solid #ffcc00!important;color:#ffcc00!important;}
+body.hc .xp-popup .xp-reason{color:#ccc!important;}
+/* SVG knowledge tree — invert fills since they use presentation attributes not CSS */
+body.hc svg{filter:invert(1) hue-rotate(180deg);}
+
 /* XP popups */
 .xp-popup-stack{position:fixed;top:64px;right:8px;z-index:1500;display:flex;flex-direction:column;gap:3px;align-items:flex-end;pointer-events:none;}
 .xp-popup{background:#0a1a2acc;border:1px solid #4a6a8a;border-left:2px solid #e6a817;border-radius:4px;padding:3px 7px;color:#c8901a;font-weight:600;font-size:10px;white-space:nowrap;opacity:0;transform:translateX(40px);animation:xpFly 1.2s ease-out forwards;}
@@ -1073,6 +1086,7 @@ function App() {
   const [logModal,      setLogModal]      = useState(false);
   const [audioModal,    setAudioModal]    = useState(false);
   const [saveModal,     setSaveModal]     = useState(false);
+  const [hcMode,        setHcMode]        = useState(() => localStorage.getItem("sbr_hc") === "1");
   const [supportModal,  setSupportModal]  = useState(false);
   const [importText,    setImportText]    = useState("");
   const [saveStatus,    setSaveStatus]    = useState("");
@@ -1197,6 +1211,12 @@ function App() {
     }
     prevLayerRef.current = layer;
   },[layer,awardXP]);
+
+  // Sync high contrast class on body and persist preference
+  useEffect(() => {
+    document.body.classList.toggle("hc", hcMode);
+    try { localStorage.setItem("sbr_hc", hcMode ? "1" : "0"); } catch(e) {}
+  }, [hcMode]);
 
   // Start ambient music after first interaction
   const ensureMusicStarted = useCallback(() => {
@@ -2045,6 +2065,7 @@ function App() {
             <span>{FMT(xpData.xp)}</span>
             {activeRank&&<span style={{marginLeft:4,fontSize:13}} title={activeRank.name}>{activeRank.icon}</span>}
           </button>
+          <button onClick={()=>setHcMode(h=>!h)} style={{padding:"6px 10px",background:"#0d1a2e",border:"1px solid "+(hcMode?"#fff":accent),borderRadius:6,color:hcMode?"#fff":"#a0c4ff",fontSize:13,cursor:"pointer",fontWeight:600}} title="Toggle high contrast mode">👁</button>
           <button onClick={()=>{AudioEngine.resume();setAudioModal(true);}} style={{padding:"6px 10px",background:"#0d1a2e",border:"1px solid "+accent,borderRadius:6,color:"#a0c4ff",fontSize:13,cursor:"pointer",fontWeight:600}} title="Audio settings">{audioSettings.muted?"🔇":"🔊"}</button>
           <button onClick={()=>setSaveModal(true)} style={{padding:"6px 10px",background:"#0d1a2e",border:"1px solid "+accent,borderRadius:6,color:"#a0c4ff",fontSize:13,cursor:"pointer",fontWeight:600}} title="Save / Load">💾</button>
           <button onClick={()=>setSupportModal(true)} style={{padding:"6px 10px",background:"#0d1a2e",border:"1px solid "+accent,borderRadius:6,color:"#a0c4ff",fontSize:13,cursor:"pointer",fontWeight:600}} title="Support & Patch Notes">ℹ️</button>
