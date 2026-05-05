@@ -465,11 +465,11 @@ const BUILDINGS = {
   // Phases are gated linearly: phase 1 → phase 2 → ... → phase 5 → Launch button.
   // All v0.8.3 gates (building prereqs, knowReq tier-3) carry into phase 1 as well as
   // a new upgradeReq for "2 of u13, u14, u15."
-  cs_phase1: {id:"cs_phase1",  layer:3,name:"Hull Frame",       res:"minerals",  base:25000, prod:{},                                   tier:4,cost:{minerals:25000,energy:15000},                  desc:"The skeleton. Welded in vacuum.",                          multi:true, phase:true, phaseNum:1, requires:{shipyard:3, warplab:2, deepspaceantenna:2, probefactory:3}, knowReq:"tier3", upgradeReq:2},
-  cs_phase2: {id:"cs_phase2",  layer:3,name:"Engines",          res:"fuel",      base:25000, prod:{},                                   tier:4,cost:{fuel:25000,minerals:15000,research:5000},      desc:"Fusion reactors. Loud. Don't stand near them.",            multi:true, phase:true, phaseNum:2},
-  cs_phase3: {id:"cs_phase3",  layer:3,name:"Life Support",     res:"population",base:20000, prod:{},                                   tier:4,cost:{population:20000,research:15000,energy:10000}, desc:"Air, water, hydroponics, gravity rings.",                  multi:true, phase:true, phaseNum:3},
-  cs_phase4: {id:"cs_phase4",  layer:3,name:"Cargo & Cryo",     res:"population",base:20000, prod:{},                                   tier:4,cost:{population:20000,minerals:15000,fuel:10000},   desc:"Sleeping bays for 1,200 colonists plus Dave.",             multi:true, phase:true, phaseNum:4},
-  cs_phase5: {id:"cs_phase5",  layer:3,name:"Navigation Core",  res:"research",  base:30000, prod:{},                                   tier:4,cost:{research:30000,energy:10000,fuel:10000},       desc:"Charts the route. Dave's body. Probably.",                 multi:true, phase:true, phaseNum:5},
+  cs_phase1: {id:"cs_phase1",  layer:3,name:"Hull Frame",       res:"minerals",  base:25000, prod:{},                                   tier:4,cost:{minerals:2500000,energy:1500000},                  desc:"The skeleton. Welded in vacuum.",                          multi:true, phase:true, phaseNum:1, requires:{shipyard:3, warplab:2, deepspaceantenna:2, probefactory:3}, knowReq:"tier3", upgradeReq:2},
+  cs_phase2: {id:"cs_phase2",  layer:3,name:"Engines",          res:"fuel",      base:25000, prod:{},                                   tier:4,cost:{fuel:2500000,minerals:1500000,research:500000},      desc:"Fusion reactors. Loud. Don't stand near them.",            multi:true, phase:true, phaseNum:2},
+  cs_phase3: {id:"cs_phase3",  layer:3,name:"Life Support",     res:"population",base:20000, prod:{},                                   tier:4,cost:{population:2000000,research:1500000,energy:1000000}, desc:"Air, water, hydroponics, gravity rings.",                  multi:true, phase:true, phaseNum:3},
+  cs_phase4: {id:"cs_phase4",  layer:3,name:"Cargo & Cryo",     res:"population",base:20000, prod:{},                                   tier:4,cost:{population:2000000,minerals:1500000,fuel:1000000},   desc:"Sleeping bays for 1,200 colonists plus Dave.",             multi:true, phase:true, phaseNum:4},
+  cs_phase5: {id:"cs_phase5",  layer:3,name:"Navigation Core",  res:"research",  base:30000, prod:{},                                   tier:4,cost:{research:3000000,energy:1000000,fuel:1000000},       desc:"Charts the route. Dave's body. Probably.",                 multi:true, phase:true, phaseNum:5},
 };
 
 const UPGRADES = [
@@ -645,7 +645,18 @@ const PLANETS = ["Kepler-442b","Proxima Centauri b","TRAPPIST-1e","Gliese 667Cc"
 const TIER3_KNOW = ["ke3","km3","kr3","kp3","kf3"];
 
 const PATCH_NOTES = [
-  {version:"v0.9", date:"Latest", changes:[
+  {version:"v0.9.1", date:"Latest", changes:[
+    "★ Soft Choices / Branching Upgrades — three exclusive upgrade pairs, one per layer. Pick one, the other is locked forever.",
+    "Layer 1: Overclock Protocol (passive ×2, clicks ×0.5) vs Field Operator (clicks ×4, passive ×0.7)",
+    "Layer 2: Fuel First (fuel ×4, other orbital ×0.6) vs Steady Ascent (all orbital ×2.5)",
+    "Layer 3: Fast Launch (ship phases −40%, LP ×0.5) vs Grand Expedition (ship phases +40%, LP ×3, prestige ×2)",
+    "★ Animated Building Icons — buildings show an idle animation when producing (spin, bounce, pulse, sway, float — varies by building)",
+    "★ High Contrast Mode — 👁 button in the header toggles a white-on-black high contrast theme; preference saves across sessions",
+    "Quieter XP Popups — smaller, lower opacity, shorter duration; rapid gains batch into a single popup instead of stacking",
+    "Colony Ship phase costs increased ×100 — the endgame now requires serious resource accumulation",
+    "Bug fix — passive production for non-clicked resources now continues correctly while holding a click button",
+  ]},
+  {version:"v0.9", date:"", changes:[
     "★ Phased Colony Ship construction — the single 'buy a ship' button is replaced by a five-phase build sequence",
     "Phase 1: Hull Frame (25K minerals, 15K energy)",
     "Phase 2: Engines (25K fuel, 15K minerals, 5K research)",
@@ -1383,7 +1394,7 @@ function App() {
       Object.keys(p).forEach(k=>{p[k] *= (1+echoBonus);});
     }
     return p;
-  },[buildings,upgrades,knowledge,prestigeBonus,rankEffect,elapsed,davesPause,res.minerals]);
+  },[buildings,upgrades,knowledge,prestigeBonus,rankEffect,elapsed,davesPause]);
 
   useEffect(()=>{
     if(paused) return;
