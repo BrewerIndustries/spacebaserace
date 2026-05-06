@@ -156,6 +156,7 @@ Features planned for future runs:
 ### Feel & Polish
 - **Onboarding / First-Run Tutorial** — a lightweight tooltip sequence for brand-new players: highlight the first click button, explain resources, nudge toward the first building. Skippable, never shown again after run 1. Critical for itch.io discoverability where players have no context.
 - **Keyboard Shortcuts** — number keys (1–5) to trigger resource clicks, hotkeys to switch tabs. Low-effort, high-reward for power users.
+- **Tab Bar Redesign** — restyle the two-row tab bar to look like physical file tabs (raised active tab, recessed inactive, clear visual separation between rows and content panel) rather than plain text buttons on a strip.
 
 ### Accessibility & Platform
 - **Mobile / Touchscreen Friendly** — responsive layout and touch-optimized controls so the game plays well on phones and tablets.
