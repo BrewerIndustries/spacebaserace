@@ -157,6 +157,9 @@ Features planned for future runs:
 - **Onboarding / First-Run Tutorial** — a lightweight tooltip sequence for brand-new players: highlight the first click button, explain resources, nudge toward the first building. Skippable, never shown again after run 1. Critical for itch.io discoverability where players have no context.
 - **Keyboard Shortcuts** — number keys (1–5) to trigger resource clicks, hotkeys to switch tabs. Low-effort, high-reward for power users.
 - **Tab Bar Redesign** — restyle the two-row tab bar to look like physical file tabs (raised active tab, recessed inactive, clear visual separation between rows and content panel) rather than plain text buttons on a strip.
+- **Tab Badge Behaviour** — badges should clear when the tab is visited and only reappear when a genuinely new item becomes available. Replace the item-count number with a single `!` indicator. Prevents the badge from feeling like a permanent counter rather than a live notification.
+- **Countdown Timer Layout Fix** — when a building or upgrade is on cooldown the timer text adds an extra line, shifting card heights. Fix by always reserving that line: show the timer while counting down, then swap in "Available" in green text when ready. Keeps all cards the same height at all times.
+- **Readability & Contrast Pass** — brighten text-to-background ratios throughout: comms/log area, planet name in the header, and blue-on-dark-blue labels. Increase font weight and loosen tracking (currently too thin and condensed) so text is comfortable to read at a glance without needing to lean in.
 
 ### Accessibility & Platform
 - **Mobile / Touchscreen Friendly** — responsive layout and touch-optimized controls so the game plays well on phones and tablets.
@@ -165,6 +168,10 @@ Features planned for future runs:
 ### Meta & Community
 - **User Registration** — account system so players can save progress server-side, appear on leaderboards, and carry stats across devices. Foundation for Daily Challenge, Leaderboard, and social features.
 - **Referral / Share Link** — one-click share that opens itch.io, for word-of-mouth growth.
+
+### Ranks & Achievements
+- **Rank Collection Achievements** — achievements built around the rank system: first rank of each rarity tier (Common, Rare, Legendary, Mythic), milestone counts (collect 5, 10, 20, all 39 standard ranks), all hidden/secret ranks collected. Surfaces rank collecting as an explicit long-term goal alongside launching colony ships.
+- **Ranks in the Story** — make rank collecting feel meaningful through two layers: (1) **Rank lore** — story events and codex entries that explain what ranks *are* in-world: a mix of Earth HQ's official Colonial Designation System, Dave's own parallel classification framework, and the history of how the two systems diverged and occasionally conflict. Each rarity tier has a different origin (e.g. Common ranks are Earth-issued field designations; Legendary ranks were coined by Dave; secret ranks have no official record). (2) **Rank milestone story events** — specific story cards fire when the player collects their first rank of a given rarity, their first secret rank, or reaches a milestone count. Dave reacts to rank milestones in his own way. The narrative frames collecting ranks as the colony's growing reputation being observed — by Earth, by Dave, and possibly by something else.
 
 ### Story & World
 - **Story Effects on Gameplay** — story events should trigger real mechanical effects: a solar flare temporarily doubles energy, antimatter incident locks an upgrade for 60 seconds, Dave's calculations award a fuel bonus. Ties narrative to simulation and rewards players paying attention.
