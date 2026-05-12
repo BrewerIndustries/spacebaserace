@@ -35,8 +35,8 @@ Survey the cosmos, develop warp drive theory, and assemble the Colony Ship acros
 - **Milestone cosmetics** — the UI accent color and header badges shift as you hit major milestones
 - **Pause** — blurs the screen and freezes all timers and production
 - **Time-to-afford** counters on all buildings and upgrades
-- **Achievements** — 24 total, with milestone achievements marked with a star
-- **Tab Badging** — live badges on the Upgrade, Knowledge, and Achievements tabs show when new items are available or affordable
+- **Achievements** — 35 total (24 play-based + 11 rank collection), with milestone achievements marked with a star
+- **Tab Badging** — `!` badge on tabs clears on visit and reappears only when a genuinely new item becomes available (not a permanent counter)
 - **Hold to Generate Resources** — hold down any click button to continuously generate resources; touch-friendly for mobile play
 - **Combined Resource Buildings** — multi-resource buildings are grouped in a dedicated section below the single-resource columns
 - **Audio engine** — procedural SFX for clicks, purchases, achievements, knowledge unlocks, and prestige launch, plus a slow evolving ambient music pad. All generated in-browser via Web Audio API — no audio files.
@@ -157,9 +157,6 @@ Features planned for future runs:
 - **Onboarding / First-Run Tutorial** — a lightweight tooltip sequence for brand-new players: highlight the first click button, explain resources, nudge toward the first building. Skippable, never shown again after run 1. Critical for itch.io discoverability where players have no context.
 - **Keyboard Shortcuts** — number keys (1–5) to trigger resource clicks, hotkeys to switch tabs. Low-effort, high-reward for power users.
 - **Tab Bar Redesign** — restyle the two-row tab bar to look like physical file tabs (raised active tab, recessed inactive, clear visual separation between rows and content panel) rather than plain text buttons on a strip.
-- **Tab Badge Behaviour** — badges should clear when the tab is visited and only reappear when a genuinely new item becomes available. Replace the item-count number with a single `!` indicator. Prevents the badge from feeling like a permanent counter rather than a live notification.
-- **Countdown Timer Layout Fix** — when a building or upgrade is on cooldown the timer text adds an extra line, shifting card heights. Fix by always reserving that line: show the timer while counting down, then swap in "Available" in green text when ready. Keeps all cards the same height at all times.
-- **Readability & Contrast Pass** — brighten text-to-background ratios throughout: comms/log area, planet name in the header, and blue-on-dark-blue labels. Increase font weight and loosen tracking (currently too thin and condensed) so text is comfortable to read at a glance without needing to lean in.
 
 ### Accessibility & Platform
 - **Mobile / Touchscreen Friendly** — responsive layout and touch-optimized controls so the game plays well on phones and tablets.
@@ -170,18 +167,26 @@ Features planned for future runs:
 - **Referral / Share Link** — one-click share that opens itch.io, for word-of-mouth growth.
 
 ### Ranks & Achievements
-- **Rank Collection Achievements** — achievements built around the rank system: first rank of each rarity tier (Common, Rare, Legendary, Mythic), milestone counts (collect 5, 10, 20, all 39 standard ranks), all hidden/secret ranks collected. Surfaces rank collecting as an explicit long-term goal alongside launching colony ships.
 - **Ranks in the Story** — make rank collecting feel meaningful through two layers: (1) **Rank lore** — story events and codex entries that explain what ranks *are* in-world: a mix of Earth HQ's official Colonial Designation System, Dave's own parallel classification framework, and the history of how the two systems diverged and occasionally conflict. Each rarity tier has a different origin (e.g. Common ranks are Earth-issued field designations; Legendary ranks were coined by Dave; secret ranks have no official record). (2) **Rank milestone story events** — specific story cards fire when the player collects their first rank of a given rarity, their first secret rank, or reaches a milestone count. Dave reacts to rank milestones in his own way. The narrative frames collecting ranks as the colony's growing reputation being observed — by Earth, by Dave, and possibly by something else.
 
 ### Story & World
 - **Story Effects on Gameplay** — story events should trigger real mechanical effects: a solar flare temporarily doubles energy, antimatter incident locks an upgrade for 60 seconds, Dave's calculations award a fuel bonus. Ties narrative to simulation and rewards players paying attention.
 - **Environmental Storylines** — planet-specific story arcs driven by the environment itself: weather events on a frozen world, volcanic eruptions on a magma planet, atmospheric storms on a gas giant moon, tidal cycles on an ocean world. Each biome gets 3–5 unique environmental events that fire across a run, building a sense of place beyond just stat modifiers.
 - **Alien Signal Storyline** — the signal detected in the first story event develops across layers into a full mystery arc.
-- **Textbook / Codex** — a reference tab with full lore definitions for every building, upgrade, and knowledge node, with extra story depth.
 
 ---
 
 ## Changelog
+
+### v1.3
+- ★ Rank Collection Achievements — 11 new achievements tied to the rank system: first of each rarity tier (Common through Mythic), milestone counts (5, 10, 20 ranks), Full Roster (all non-secret), and Classified Cleared (all 3 secret ranks). Rank collecting is now an explicit long-term goal.
+- ✓ Tab Badge Behaviour — badges now clear when you visit a tab and reappear only when genuinely new items become available. Changed from a number counter to a single `!` indicator.
+- ✓ Countdown Timer Layout Fix — building and upgrade cards now always reserve the timer line height. Shows `~Xs` while counting down, swaps to green "✓ Available" when ready. Cards no longer shift height.
+- ✓ Readability & Contrast Pass — brighter text throughout: comms/log entries, story ticker, planet name, tab labels. Increased font weight on secondary labels.
+
+### v1.2
+- ★ Textbook / Codex tab — in-game reference for everything: Resources, Buildings, Upgrades, Knowledge nodes, Ranks, Biomes, Planets, and People. 130+ entries with lore, mechanics, and progressive discovery (locked entries shown as classified until seen in-game).
+- Rank lore — narrative system explaining the Colonial Designation System, Dave's parallel classification, and the origin story of each rarity tier.
 
 ### v1.1
 - ★ 30 Biomes — each prestige run lands on a uniquely flavoured world: Mushroom World, Sentient Fog, Dave World, Chaos World, Gerald's World, The Waiting Room, and 24 more. Biome shown as a badge in the header.
