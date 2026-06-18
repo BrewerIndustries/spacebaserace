@@ -1,0 +1,10 @@
+{
+  "id": "spacebaserace",
+  "name": "Space Base Race",
+  "category": "games",
+  "status": { "prod": "live", "dev": "live" },
+  "deploy": {
+    "prod": { "url": "https://spacebaserace.dabrewer.dev/" },
+    "dev": { "url": "https://spacebaserace.dabrewer.dev/dev/" }
+  }
+}
