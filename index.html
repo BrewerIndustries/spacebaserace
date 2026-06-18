@@ -1781,7 +1781,7 @@ function TutorialOverlay({step, total, onNext, onSkip}) {
   const isLast = step === total - 1;
   return (
     <div style={{position:"fixed",inset:0,background:"#000000bb",zIndex:9000,display:"flex",alignItems:"center",justifyContent:"center",padding:16,pointerEvents:"all"}}>
-      <div style={{background:"#0a1525",border:"2px solid #3a6a9a",borderRadius:14,padding:"22px 24px",maxWidth:380,width:"100%",boxShadow:"0 0 60px #0000009a",animation:"xpFly 0.25s ease-out forwards",opacity:1,transform:"none"}}>
+      <div style={{background:"#0a1525",border:"2px solid #3a6a9a",borderRadius:14,padding:"22px 24px",maxWidth:380,width:"100%",boxShadow:"0 0 60px #0000009a"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
           <span style={{fontSize:10,color:"#4a7a9a",letterSpacing:2,textTransform:"uppercase",fontWeight:600}}>{"Step "+(step+1)+" / "+total}</span>
           <div style={{display:"flex",gap:3}}>{Array.from({length:total},(_,i)=>(
@@ -1828,7 +1828,10 @@ function App() {
   const [prestigeBonus, setPrestigeBonus] = useState(1);
   const [legacyPoints,  setLegacyPoints]  = useState(0);
   const [currentPlanet, setCurrentPlanet] = useState("Earth II");
-  const [achievements,  setAchievements]  = useState([]);
+  const [achievements,  setAchievements]  = useState(()=>{
+    const unlocks = XPStore.get().achievementUnlocks;
+    return Object.keys(unlocks).filter(id=>!!unlocks[id]);
+  });
   const [milestones,    setMilestones]    = useState([]);
   const [storyLog,      setStoryLog]      = useState([]);
   const [commsLog,      setCommsLog]      = useState([]);
@@ -2122,7 +2125,7 @@ function App() {
       setTicker({icon:ev.icon,text:ev.text,isStory:false});
       setCommsLog(prev=>[{...ev,time:0,kind:"ambient"},...prev]);
       setUnseenComms(n=>n+1);
-      nextTickRef.current=Date.now()+(3+Math.random()*3)*60*1000;
+      nextTickRef.current=Date.now()+(25+Math.random()*20)*1000; // 25-45s after first message
     },8000);
     return()=>clearTimeout(t);
   },[]);
@@ -2139,6 +2142,8 @@ function App() {
         setCommsLog(prev=>[{...ev,time:elapsed,kind:"story"},...prev]);
         // First time ever seeing this story event → XP
         if (XPStore.markFirst("storyEvents", ev.id)) awardXP(10, "Story event");
+        // Story events: short pause then back to ambient rhythm
+        nextTickRef.current=Date.now()+(20+Math.random()*20)*1000; // 20-40s until next
       } else {
         const biome = BIOMES[prestige % BIOMES.length];
         const usesBiome = biome && biome.events && biome.events.length > 0 && Math.random() < 0.4;
@@ -2146,10 +2151,11 @@ function App() {
           ? biome.events[Math.floor(Math.random()*biome.events.length)]
           : AMBIENT_EVENTS[Math.floor(Math.random()*AMBIENT_EVENTS.length)];
         setCommsLog(prev=>[{...ev,time:elapsed,kind:"ambient"},...prev]);
+        // Ambient events: 60-120s gap so they don't drown out story
+        nextTickRef.current=Date.now()+(60+Math.random()*60)*1000;
       }
       setTicker({icon:ev.icon,text:ev.text||ev.title,isStory:!!ev.title,title:ev.title});
       setUnseenComms(n=>n+1);
-      nextTickRef.current=Date.now()+(3+Math.random()*3)*60*1000;
     },5000);
     return()=>clearInterval(iv);
   },[paused,buildings,knowledge,layer,storyLog,elapsed,awardXP,prestige,xpData]);
@@ -2258,10 +2264,16 @@ function App() {
     ACHIEVEMENTS.forEach(a=>{
       if(!achievements.includes(a.id)&&a.check(totalRes,buildings,upgrades,prestige,totalClicks,knowledge,totalSells,elapsed,layer,xpData)){
         setAchievements(prev=>[...prev,a.id]);
-        setNewAch(a.name);
-        AudioEngine.play('achieve');
-        awardXP(25, "Achievement!");
-        setTimeout(()=>setNewAch(null),3000);
+        const isNew = XPStore.markAchievement(a.id);
+        if (isNew) {
+          setNewAch(a.name);
+          AudioEngine.play('achieve');
+          awardXP(25, "Achievement!");
+          setTimeout(()=>setNewAch(null),3000);
+          setTicker({icon:"🏅", title:"Achievement Unlocked", text:a.name+": "+a.desc, isStory:true});
+          setCommsLog(prev=>[{icon:"🏅", title:"Achievement: "+a.name, text:a.desc, time:elapsed, kind:"achievement"},...prev]);
+          setUnseenComms(n=>n+1);
+        }
       }
     });
   },[totalRes,buildings,upgrades,prestige,totalClicks,knowledge,totalSells,elapsed,layer,achievements,awardXP,xpData]);
@@ -2413,8 +2425,10 @@ function App() {
     awardXP(500, "Colony Ship launched!");
     const wasFaster = XPStore.setBest(elapsed);
     if (wasFaster !== null && wasFaster > 0) awardXP(100, "New personal best!");
-    if (XPStore.markFirst("planets", currentPlanet)) awardXP(50, "First time at "+currentPlanet);
-    XPStore.markFirst("biomes", String(prestige % BIOMES.length));
+    const destPlanet = PLANETS[prestige % PLANETS.length];
+    if (XPStore.markFirst("planets", destPlanet)) awardXP(50, "First time visiting "+destPlanet);
+    XPStore.markFirst("biomes", String(prestige % BIOMES.length));        // departing biome
+    XPStore.markFirst("biomes", String((prestige+1) % BIOMES.length));   // arriving biome
     // Running Naked check — launch with no rank, after having previously launched with one
     // Note: the secret "Naked Engineer" rank counts as no-rank for this achievement
     const isNakedForAchievement = !activeRank || activeRank.effect.special === "naked_engineer";
@@ -2423,9 +2437,13 @@ function App() {
       awardXP(200, "Running Naked!");
       if (!achievements.includes("a24")) {
         setAchievements(prev=>[...prev,"a24"]);
+        XPStore.markAchievement("a24");
         setNewAch("Running Naked");
         AudioEngine.play('achieve');
         setTimeout(()=>setNewAch(null),3000);
+        setTicker({icon:"🏅", title:"Achievement Unlocked", text:"Running Naked: "+ACHIEVEMENTS.find(a=>a.id==="a24")?.desc, isStory:true});
+        setCommsLog(prev=>[{icon:"🏅", title:"Achievement: Running Naked", text:ACHIEVEMENTS.find(a=>a.id==="a24")?.desc||"", time:elapsed, kind:"achievement"},...prev]);
+        setUnseenComms(n=>n+1);
       }
     }
     setXpData(XPStore.get());
@@ -2876,14 +2894,17 @@ function App() {
             {commsLog.length===0&&<div style={{textAlign:"center",color:"#6a8aaa",fontSize:12,padding:"20px 0"}}>No transmissions yet.</div>}
             {commsLog.map((ev,i)=>{
               const isStory=ev.kind==="story";
+              const isAch=ev.kind==="achievement";
+              const isRich=isStory||isAch;
+              const borderColor=i===0?(isAch?"#5a4a1a":isStory?"#2a4a6a":"#1a2a3a"):"#101820";
               return(
-                <div key={i} style={{background:"#080d1a",border:"1px solid "+(i===0?isStory?"#2a4a6a":"#1a2a3a":"#101820"),borderRadius:8,padding:"8px 10px",marginBottom:6,opacity:i===0?1:isStory?0.9:0.7}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:isStory?3:1}}>
-                    <span style={{fontSize:isStory?15:12,flexShrink:0}}>{ev.icon}</span>
-                    {isStory?<span style={{fontSize:12,fontWeight:700,color:"#a0c4ff"}}>{ev.title}</span>:<span style={{fontSize:10,fontWeight:600,color:"#6a9abf"}}>Comms</span>}
+                <div key={i} style={{background:"#080d1a",border:"1px solid "+borderColor,borderRadius:8,padding:"8px 10px",marginBottom:6,opacity:i===0?1:isRich?0.9:0.7}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:isRich?3:1}}>
+                    <span style={{fontSize:isRich?15:12,flexShrink:0}}>{ev.icon}</span>
+                    {isAch?<span style={{fontSize:12,fontWeight:700,color:"#f0c040"}}>{ev.title}</span>:isStory?<span style={{fontSize:12,fontWeight:700,color:"#a0c4ff"}}>{ev.title}</span>:<span style={{fontSize:10,fontWeight:600,color:"#6a9abf"}}>Comms</span>}
                     <span style={{fontSize:9,color:"#4a6a9a",marginLeft:"auto"}}>{"T+"+fmtTime(ev.time||0)}</span>
                   </div>
-                  <div style={{fontSize:isStory?10:9,color:isStory?"#b0c4d8":"#8aaac0",lineHeight:1.5,fontStyle:isStory?"normal":"italic"}}>{ev.text}</div>
+                  <div style={{fontSize:isRich?10:9,color:isAch?"#d4a840":isStory?"#b0c4d8":"#8aaac0",lineHeight:1.5,fontStyle:isRich?"normal":"italic"}}>{ev.text}</div>
                 </div>
               );
             })}
