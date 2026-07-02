@@ -1,7 +1,9 @@
 {
   "id": "spacebaserace",
   "name": "Space Base Race",
+  "description": "An idle/incremental clicker where you build a space colony across surface, orbital, and deep-space layers, research a branching knowledge tree, then prestige to a new exoplanet.",
   "category": "games",
+  "tech": ["React 18", "Babel (in-browser)", "Vanilla CSS", "localStorage", "single-file HTML", "GitHub Pages"],
   "status": { "prod": "live", "dev": "live" },
   "deploy": {
     "prod": { "url": "https://spacebaserace.dabrewer.dev/" },
